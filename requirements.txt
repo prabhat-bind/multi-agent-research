@@ -47,3 +47,12 @@ langchain
 langchain-google-genai
 langchain-groq
 python-dotenv
+
+
+streamlit
+reportlab
+python-docx
+openpyxl
+python-pptx
+markdown
+ 
