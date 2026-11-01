@@ -1,4 +1,5 @@
 
+
 import html
 import io
 import os
@@ -11,8 +12,8 @@ import streamlit as st
 from agents import build_reader_agent, build_search_agent, writer_chain, critic_chain
 
 st.set_page_config(
-    page_title="ResearchMind · AI Research Agent",
-    page_icon="🔬",
+    page_title="FinSight · AI Finance Research Agent",
+    page_icon="📈",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -24,15 +25,15 @@ CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
 
-:root{ --bg:#07060f; --a:#7c5cff; --b:#22d3ee; --ok:#34d399; --err:#f87171;
-       --text:#e9e7f5; --muted:#9a97b5; }
+:root{ --bg:#060a09; --a:#10b981; --b:#f59e0b; --ok:#34d399; --err:#f87171;
+       --text:#e9f5ef; --muted:#97b3a8; }
 
 html, body, [class*="css"]{ font-family:'Inter',sans-serif; color:var(--text); }
 .stApp{
   color-scheme:dark; background:var(--bg);
   background-image:
-    radial-gradient(ellipse 70% 45% at 15% -5%, rgba(124,92,255,.22), transparent 60%),
-    radial-gradient(ellipse 60% 40% at 90% 105%, rgba(34,211,238,.14), transparent 55%);
+    radial-gradient(ellipse 70% 45% at 15% -5%, rgba(16,185,129,.22), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 105%, rgba(245,158,11,.14), transparent 55%);
   overflow-x:hidden;
 }
 #MainMenu, footer, header, [data-testid="stToolbar"], [data-testid="stDecoration"]{ display:none !important; }
@@ -42,8 +43,8 @@ html, body, [class*="css"]{ font-family:'Inter',sans-serif; color:var(--text); }
 .stApp::before{
   content:""; position:fixed; left:-50%; right:-50%; bottom:-8%; height:60vh; z-index:0; pointer-events:none;
   background-image:
-    linear-gradient(rgba(124,92,255,.35) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(124,92,255,.35) 1px, transparent 1px);
+    linear-gradient(rgba(16,185,129,.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16,185,129,.35) 1px, transparent 1px);
   background-size:60px 60px;
   transform:perspective(500px) rotateX(62deg); transform-origin:center bottom;
   animation:gridmove 5s linear infinite;
@@ -56,9 +57,9 @@ html, body, [class*="css"]{ font-family:'Inter',sans-serif; color:var(--text); }
 .hero{ text-align:center; padding:1.5rem 0 1rem; }
 .scene{ width:110px; height:110px; margin:0 auto 1.8rem; perspective:600px; animation:bob 4s ease-in-out infinite; }
 .cube{ width:110px; height:110px; position:relative; transform-style:preserve-3d; animation:spin 14s linear infinite; }
-.face{ position:absolute; width:110px; height:110px; border:1px solid rgba(34,211,238,.65);
-  background:linear-gradient(135deg, rgba(124,92,255,.28), rgba(34,211,238,.10));
-  box-shadow:inset 0 0 25px rgba(124,92,255,.40), 0 0 18px rgba(124,92,255,.25); }
+.face{ position:absolute; width:110px; height:110px; border:1px solid rgba(245,158,11,.65);
+  background:linear-gradient(135deg, rgba(16,185,129,.28), rgba(245,158,11,.10));
+  box-shadow:inset 0 0 25px rgba(16,185,129,.40), 0 0 18px rgba(16,185,129,.25); }
 .f1{ transform:rotateY(0deg)   translateZ(55px); }
 .f2{ transform:rotateY(90deg)  translateZ(55px); }
 .f3{ transform:rotateY(180deg) translateZ(55px); }
@@ -75,11 +76,11 @@ html, body, [class*="css"]{ font-family:'Inter',sans-serif; color:var(--text); }
 .hero-title{
   font-family:'Sora',sans-serif; font-weight:800; letter-spacing:-.03em; line-height:1.05;
   font-size:clamp(2.6rem, 6vw, 4.6rem); margin-bottom:.9rem;
-  background:linear-gradient(90deg, #fff, #b8a8ff, #22d3ee, #fff); background-size:300% 100%;
+  background:linear-gradient(90deg, #fff, #6ee7b7, #fbbf24, #fff); background-size:300% 100%;
   -webkit-background-clip:text; background-clip:text; color:transparent; animation:shine 6s linear infinite;
 }
 @keyframes shine{ to{ background-position:-300% 0 } }
-.hero-sub{ color:var(--muted); font-size:1.02rem; font-weight:300; max-width:540px; margin:0 auto; line-height:1.65; }
+.hero-sub{ color:var(--muted); font-size:1.02rem; font-weight:300; max-width:560px; margin:0 auto; line-height:1.65; }
 
 /* ── Glass containers (keyed containers) ── */
 .st-key-exportcard .stDownloadButton>button{ padding:.65rem .3rem; font-size:.85rem; }
@@ -88,24 +89,24 @@ html, body, [class*="css"]{ font-family:'Inter',sans-serif; color:var(--text); }
   background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.09);
   border-radius:18px; padding:1.4rem 1.6rem; backdrop-filter:blur(10px);
 }
-.st-key-reportcard{ border-color:rgba(124,92,255,.35); box-shadow:0 0 40px rgba(124,92,255,.12); }
+.st-key-reportcard{ border-color:rgba(16,185,129,.35); box-shadow:0 0 40px rgba(16,185,129,.12); }
 
 /* ── Inputs & buttons ── */
 .stTextInput label p{ font-family:'JetBrains Mono',monospace !important; font-size:.72rem !important;
   letter-spacing:.15em; text-transform:uppercase; color:var(--b) !important; }
-.stTextInput input{ background:rgba(255,255,255,.06) !important; border:1px solid rgba(124,92,255,.35) !important;
+.stTextInput input{ background:rgba(255,255,255,.06) !important; border:1px solid rgba(16,185,129,.35) !important;
   border-radius:12px !important; color:var(--text) !important; padding:.75rem 1rem !important; }
-.stTextInput input:focus{ border-color:var(--b) !important; box-shadow:0 0 0 3px rgba(34,211,238,.15) !important; }
-.stTextInput input::placeholder{ color:#6b6890 !important; }
+.stTextInput input:focus{ border-color:var(--b) !important; box-shadow:0 0 0 3px rgba(245,158,11,.15) !important; }
+.stTextInput input::placeholder{ color:#5f7a6e !important; }
 
 .stButton>button, .stDownloadButton>button{
   background:linear-gradient(135deg, var(--a), var(--b)); color:#fff; border:none; border-radius:12px;
   font-family:'Sora',sans-serif; font-weight:600; padding:.7rem 1.4rem;
-  box-shadow:0 8px 30px rgba(124,92,255,.35); transition:transform .2s, box-shadow .2s;
+  box-shadow:0 8px 30px rgba(16,185,129,.35); transition:transform .2s, box-shadow .2s;
 }
 .stButton>button p, .stDownloadButton>button p{ color:inherit !important; }
 .stButton>button:hover, .stDownloadButton>button:hover{
-  transform:translateY(-3px) scale(1.01); box-shadow:0 14px 38px rgba(34,211,238,.35); color:#fff; border:none; }
+  transform:translateY(-3px) scale(1.01); box-shadow:0 14px 38px rgba(245,158,11,.35); color:#fff; border:none; }
 .st-key-chips .stButton>button{
   background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10); box-shadow:none;
   font-family:'Inter',sans-serif; font-weight:400; font-size:.78rem; padding:.35rem .6rem; color:var(--muted); }
@@ -121,18 +122,18 @@ html, body, [class*="css"]{ font-family:'Inter',sans-serif; color:var(--text); }
   transform:rotateY(-7deg); transition:transform .35s, border-color .35s, box-shadow .35s;
 }
 .step:hover{ transform:rotateY(0deg) translateX(6px) translateZ(20px); }
-.step.running{ border-color:rgba(34,211,238,.6); animation:glow 1.5s ease-in-out infinite alternate; }
+.step.running{ border-color:rgba(245,158,11,.6); animation:glow 1.5s ease-in-out infinite alternate; }
 .step.done{ border-color:rgba(52,211,153,.45); background:rgba(52,211,153,.04); }
 .step.error{ border-color:rgba(248,113,113,.55); }
-@keyframes glow{ from{box-shadow:0 0 8px rgba(34,211,238,.15)} to{box-shadow:0 0 30px rgba(34,211,238,.40)} }
+@keyframes glow{ from{box-shadow:0 0 8px rgba(245,158,11,.15)} to{box-shadow:0 0 30px rgba(245,158,11,.40)} }
 .badge{ flex:none; width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-size:1.3rem;
-  background:linear-gradient(135deg, rgba(124,92,255,.35), rgba(34,211,238,.20)); }
+  background:linear-gradient(135deg, rgba(16,185,129,.35), rgba(245,158,11,.20)); }
 .step.running .badge{ animation:jump 1s ease-in-out infinite; }
 @keyframes jump{ 50%{ transform:translateY(-5px) } }
 .step-title{ font-family:'Sora',sans-serif; font-weight:600; font-size:.95rem; }
 .step-desc{ color:var(--muted); font-size:.78rem; margin-top:.15rem; }
 .tag{ margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:.65rem; letter-spacing:.12em; }
-.tag.waiting{ color:#6b6890; } .tag.running{ color:var(--b); } .tag.done{ color:var(--ok); } .tag.error{ color:var(--err); }
+.tag.waiting{ color:#5f7a6e; } .tag.running{ color:var(--b); } .tag.done{ color:var(--ok); } .tag.error{ color:var(--err); }
 .bar{ position:absolute; left:0; bottom:0; width:100%; height:2px; background-repeat:no-repeat; background-size:40% 100%;
   background-image:linear-gradient(90deg, transparent, var(--b), transparent); animation:sweep 1.1s linear infinite; }
 @keyframes sweep{ from{background-position:-50% 0} to{background-position:150% 0} }
@@ -153,13 +154,13 @@ html, body, [class*="css"]{ font-family:'Inter',sans-serif; color:var(--text); }
 .stTabs [aria-selected="true"] p{ color:#fff; }
 .stTabs [data-baseweb="tab-highlight"]{ background:var(--b) !important; }
 [data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] li,
-[data-testid="stMarkdownContainer"] td, [data-testid="stMarkdownContainer"] th{ color:#d9d6ec; line-height:1.75; }
+[data-testid="stMarkdownContainer"] td, [data-testid="stMarkdownContainer"] th{ color:#d9ece2; line-height:1.75; }
 [data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownContainer"] h2,
 [data-testid="stMarkdownContainer"] h3, [data-testid="stMarkdownContainer"] h4,
 [data-testid="stMarkdownContainer"] strong{ color:#fff; font-family:'Sora',sans-serif; }
 [data-testid="stMarkdownContainer"] a{ color:var(--b); }
 
-.footer{ text-align:center; margin-top:3rem; font-family:'JetBrains Mono',monospace; font-size:.68rem; letter-spacing:.1em; color:#5f5c80; }
+.footer{ text-align:center; margin-top:3rem; font-family:'JetBrains Mono',monospace; font-size:.68rem; letter-spacing:.1em; color:#5f7a6e; }
 @media (prefers-reduced-motion: reduce){ *, *::before, *::after{ animation:none !important; } }
 </style>
 """
@@ -305,7 +306,7 @@ def sections(md):
 
 
 def slugify(text):
-    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:40] or "research-report"
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:40] or "finance-report"
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -343,7 +344,7 @@ def build_pdf(d):
                                     SimpleDocTemplate, Spacer, Table, TableStyle)
 
     F, FB, FM, unicode_ok = _pdf_fonts()
-    ink, accent, soft = colors.HexColor("#1f1d33"), colors.HexColor("#5b3df5"), colors.HexColor("#6b6890")
+    ink, accent, soft = colors.HexColor("#12211b"), colors.HexColor("#0d9e6d"), colors.HexColor("#5f7a6e")
     margin = 2.2 * cm
     avail = A4[0] - 2 * margin
 
@@ -362,9 +363,9 @@ def build_pdf(d):
             elif kind == "i":
                 t = f"<i>{t}</i>"
             elif kind == "c":
-                t = f'<font name="{FM}" size="9" color="#b4235a">{t}</font>'
+                t = f'<font name="{FM}" size="9" color="#b45309">{t}</font>'
             elif kind == "a":
-                t = f'<a href="{html.escape(url)}" color="#1a56db"><u>{t}</u></a>'
+                t = f'<a href="{html.escape(url)}" color="#0d9e6d"><u>{t}</u></a>'
             out.append(t)
         return "".join(out)
 
@@ -374,7 +375,7 @@ def build_pdf(d):
                                textColor=accent if n <= 2 else ink, spaceBefore=14 if n <= 2 else 10,
                                spaceAfter=6, keepWithNext=1) for n, s in sizes.items()}
     code_st = ParagraphStyle("code", fontName=FM, fontSize=8.5, leading=11, textColor=ink,
-                             backColor=colors.HexColor("#f2f1fa"), borderPadding=6, leftIndent=6,
+                             backColor=colors.HexColor("#eef7f2"), borderPadding=6, leftIndent=6,
                              spaceAfter=10, spaceBefore=4)
     quote_st = ParagraphStyle("quote", parent=body, leftIndent=14, textColor=soft)
     cell = ParagraphStyle("cell", parent=body, fontSize=9, leading=12, spaceAfter=0)
@@ -403,7 +404,7 @@ def build_pdf(d):
             elif k == "quote":
                 out.append(Paragraph("<i>" + xml(b[1]) + "</i>", quote_st))
             elif k == "hr":
-                out.append(HRFlowable(width="100%", thickness=0.6, color=colors.HexColor("#d5d3e6"),
+                out.append(HRFlowable(width="100%", thickness=0.6, color=colors.HexColor("#cfe4da"),
                                       spaceBefore=6, spaceAfter=10))
             elif k == "table" and b[1]:
                 n = max(len(r) for r in b[1])
@@ -412,7 +413,7 @@ def build_pdf(d):
                 t = Table(data, colWidths=[avail / n] * n, repeatRows=1)
                 t.setStyle(TableStyle([
                     ("BACKGROUND", (0, 0), (-1, 0), accent),
-                    ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#cfcde0")),
+                    ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#cde0d6")),
                     ("VALIGN", (0, 0), (-1, -1), "TOP"),
                     ("TOPPADDING", (0, 0), (-1, -1), 4), ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
                 ]))
@@ -423,7 +424,7 @@ def build_pdf(d):
         canvas.saveState()
         canvas.setFont(F, 8)
         canvas.setFillColor(soft)
-        canvas.drawString(margin, 1.2 * cm, clean(f"ResearchMind  |  {d['topic']}")[:90])
+        canvas.drawString(margin, 1.2 * cm, clean(f"FinSight  |  {d['topic']}")[:90])
         canvas.drawRightString(A4[0] - margin, 1.2 * cm, f"Page {doc_.page}")
         canvas.restoreState()
 
@@ -431,15 +432,15 @@ def build_pdf(d):
     sub_st = ParagraphStyle("sub", parent=body, fontSize=10, textColor=soft, spaceAfter=10)
 
     story = [Paragraph(xml(d["topic"]), title_st),
-             Paragraph(clean(f"AI Research Report  |  {d['date']}  |  generated by ResearchMind"), sub_st),
+             Paragraph(clean(f"AI Finance Research Report  |  {d['date']}  |  generated by FinSight"), sub_st),
              HRFlowable(width="100%", thickness=2, color=accent, spaceAfter=12)]
     story += story_for(parse_md(d["report"]))
-    story += [PageBreak(), Paragraph("Critic Review", heads[1])]
+    story += [PageBreak(), Paragraph("Analyst Review", heads[1])]
     story += story_for(parse_md(d["critic"]))
 
     buf = io.BytesIO()
     SimpleDocTemplate(buf, pagesize=A4, leftMargin=margin, rightMargin=margin, topMargin=2 * cm,
-                      bottomMargin=2 * cm, title=clean(d["topic"]), author="ResearchMind"
+                      bottomMargin=2 * cm, title=clean(d["topic"]), author="FinSight"
                       ).build(story, onFirstPage=footer, onLaterPages=footer)
     return buf.getvalue()
 
@@ -472,7 +473,7 @@ def build_docx(d):
                 r.font.name = "Consolas"
                 r.font.size = Pt(10)
             if kind == "a":
-                r.font.color.rgb = RGBColor(0x1A, 0x56, 0xDB)
+                r.font.color.rgb = RGBColor(0x0D, 0x9E, 0x6D)
                 r.underline = True
 
     def render(blocks):
@@ -522,12 +523,12 @@ def build_docx(d):
 
     doc.add_heading(d["topic"], 0)
     sub = doc.add_paragraph()
-    r = sub.add_run(f"AI Research Report  |  {d['date']}  |  generated by ResearchMind")
+    r = sub.add_run(f"AI Finance Research Report  |  {d['date']}  |  generated by FinSight")
     r.italic = True
-    r.font.color.rgb = RGBColor(0x6B, 0x68, 0x90)
+    r.font.color.rgb = RGBColor(0x5F, 0x7A, 0x6E)
     render(parse_md(d["report"]))
     doc.add_page_break()
-    doc.add_heading("Critic Review", 1)
+    doc.add_heading("Analyst Review", 1)
     render(parse_md(d["critic"]))
 
     buf = io.BytesIO()
@@ -543,7 +544,7 @@ def build_xlsx(d):
     from openpyxl.styles import Alignment, Font, PatternFill
 
     wb = Workbook()
-    head_fill, head_font = PatternFill("solid", fgColor="5B3DF5"), Font(bold=True, color="FFFFFF")
+    head_fill, head_font = PatternFill("solid", fgColor="0D9E6D"), Font(bold=True, color="FFFFFF")
     wrap = Alignment(wrap_text=True, vertical="top")
 
     def xl(v):
@@ -587,7 +588,7 @@ def build_xlsx(d):
         ("Agents", "Search, Reader, Writer, Critic"),
     ], [24, 70], first=True)
     sheet("Report", ["Section", "Content"], section_rows(d["report"]), [32, 110])
-    sheet("Critic Feedback", ["Section", "Content"], section_rows(d["critic"]), [32, 110])
+    sheet("Analyst Review", ["Section", "Content"], section_rows(d["critic"]), [32, 110])
     sheet("Sources", ["#", "URL"], [(i + 1, u) for i, u in enumerate(urls)] or [("", "No URLs found")], [6, 110])
     sheet("Raw Research", ["Stage", "Content"],
           [("Search agent output", d["search"]), ("Reader agent output", d["reader"])], [26, 120])
@@ -621,8 +622,8 @@ def build_pptx(d):
     from pptx.enum.shapes import MSO_SHAPE
     from pptx.util import Inches, Pt
 
-    BG, CYAN = RGBColor(0x0B, 0x0A, 0x1A), RGBColor(0x22, 0xD3, 0xEE)
-    WHITE, MUTE = RGBColor(0xFF, 0xFF, 0xFF), RGBColor(0xA9, 0xA6, 0xC8)
+    BG, GOLD = RGBColor(0x07, 0x10, 0x0C), RGBColor(0xF5, 0x9E, 0x0B)
+    WHITE, MUTE = RGBColor(0xFF, 0xFF, 0xFF), RGBColor(0x97, 0xB3, 0xA8)
 
     prs = Presentation()
     prs.slide_width, prs.slide_height = Inches(13.333), Inches(7.5)
@@ -643,7 +644,7 @@ def build_pptx(d):
     def accent(s, x, y):
         shp = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(1.3), Inches(0.07))
         shp.fill.solid()
-        shp.fill.fore_color.rgb = CYAN
+        shp.fill.fore_color.rgb = GOLD
         shp.line.fill.background()
 
     def content_slide(title, pts, n):
@@ -658,13 +659,13 @@ def build_pptx(d):
             r = p.add_run()
             r.text, r.font.size, r.font.name = "•  " + pt, Pt(20 if len(pts) <= 5 else 18), "Calibri"
             r.font.color.rgb = WHITE
-        text(s, 0.7, 6.9, 12, 0.4, f"ResearchMind  |  {n}", 11, MUTE)
+        text(s, 0.7, 6.9, 12, 0.4, f"FinSight  |  {n}", 11, MUTE)
 
     s = new_slide()
     text(s, 0.9, 2.3, 11.5, 2.2, _short(d["topic"], 80), 46, bold=True)
     accent(s, 0.95, 4.35)
-    text(s, 0.9, 4.6, 11.5, 0.6, f"AI Research Report  |  {d['date']}", 20, CYAN)
-    text(s, 0.9, 6.9, 11.5, 0.4, "Generated by ResearchMind multi-agent system", 11, MUTE)
+    text(s, 0.9, 4.6, 11.5, 0.6, f"AI Finance Research Report  |  {d['date']}", 20, GOLD)
+    text(s, 0.9, 6.9, 11.5, 0.4, "Generated by FinSight multi-agent system", 11, MUTE)
 
     n = 2
     for title, blocks in sections(d["report"])[:10]:
@@ -674,7 +675,7 @@ def build_pptx(d):
             n += 1
     pts = _points([b for _, bl in sections(d["critic"]) for b in bl], 5)
     if pts:
-        content_slide("Critic review", pts, n)
+        content_slide("Analyst review", pts, n)
 
     buf = io.BytesIO()
     prs.save(buf)
@@ -687,23 +688,23 @@ def build_pptx(d):
 _HTML = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><title>__TITLE__</title>
 <style>
-body{margin:0;background:#f6f5fb;color:#1f1d33;font:16px/1.75 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{background:linear-gradient(135deg,#7c5cff,#22d3ee);color:#fff;padding:3rem 1.5rem}
+body{margin:0;background:#f4faf7;color:#12211b;font:16px/1.75 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:linear-gradient(135deg,#10b981,#f59e0b);color:#fff;padding:3rem 1.5rem}
 header div,main{max-width:820px;margin:0 auto}
 header small{letter-spacing:.2em;opacity:.85}
 header h1{margin:.4rem 0 0;font-size:2.2rem;line-height:1.2}
-main{background:#fff;margin-top:-1.5rem;margin-bottom:3rem;padding:2rem 2.4rem;border-radius:16px;box-shadow:0 10px 40px rgba(60,40,160,.12)}
-h1,h2,h3{color:#3b2bb8;line-height:1.3} a{color:#1a56db}
-code{background:#f2f1fa;padding:.1em .35em;border-radius:4px} pre{background:#f2f1fa;padding:1rem;border-radius:8px;overflow:auto}
-table{border-collapse:collapse;width:100%} th,td{border:1px solid #d9d7ea;padding:.45rem .7rem;text-align:left} th{background:#5b3df5;color:#fff}
-blockquote{border-left:4px solid #22d3ee;margin-left:0;padding-left:1rem;color:#6b6890}
-.review{border-top:3px solid #7c5cff;margin-top:2.5rem;padding-top:1rem}
-footer{text-align:center;color:#8a87a8;font-size:.8rem;padding-bottom:2rem}
+main{background:#fff;margin-top:-1.5rem;margin-bottom:3rem;padding:2rem 2.4rem;border-radius:16px;box-shadow:0 10px 40px rgba(20,120,80,.12)}
+h1,h2,h3{color:#0b6e4f;line-height:1.3} a{color:#0d9e6d}
+code{background:#eef7f2;padding:.1em .35em;border-radius:4px} pre{background:#eef7f2;padding:1rem;border-radius:8px;overflow:auto}
+table{border-collapse:collapse;width:100%} th,td{border:1px solid #cfe4da;padding:.45rem .7rem;text-align:left} th{background:#0d9e6d;color:#fff}
+blockquote{border-left:4px solid #f59e0b;margin-left:0;padding-left:1rem;color:#5f7a6e}
+.review{border-top:3px solid #10b981;margin-top:2.5rem;padding-top:1rem}
+footer{text-align:center;color:#87a596;font-size:.8rem;padding-bottom:2rem}
 @media print{body{background:#fff} main{box-shadow:none;margin:0}}
 </style></head><body>
-<header><div><small>AI RESEARCH REPORT  |  __DATE__</small><h1>__TITLE__</h1></div></header>
-<main>__REPORT__<div class="review"><h1>Critic Review</h1>__CRITIC__</div></main>
-<footer>Generated by ResearchMind</footer></body></html>"""
+<header><div><small>AI FINANCE RESEARCH REPORT  |  __DATE__</small><h1>__TITLE__</h1></div></header>
+<main>__REPORT__<div class="review"><h1>Analyst Review</h1>__CRITIC__</div></main>
+<footer>Generated by FinSight</footer></body></html>"""
 
 
 def build_html(d):
@@ -722,8 +723,8 @@ def build_html(d):
 
 
 def build_md(d):
-    return (f"# {d['topic']}\n\n*AI Research Report | {d['date']}*\n\n{d['report']}\n\n---\n\n"
-            f"## Critic Review\n\n{d['critic']}\n").encode("utf-8")
+    return (f"# {d['topic']}\n\n*AI Finance Research Report | {d['date']}*\n\n{d['report']}\n\n---\n\n"
+            f"## Analyst Review\n\n{d['critic']}\n").encode("utf-8")
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -757,13 +758,13 @@ def build_all(d):
 # HELPERS
 # ═════════════════════════════════════════════════════════════════════
 STEPS = [
-    ("search", "🔍", "Search Agent", "Finds recent, reliable sources"),
-    ("reader", "📄", "Reader Agent", "Scrapes the best source in depth"),
-    ("writer", "✍️", "Writer", "Drafts the full research report"),
-    ("critic", "🧐", "Critic", "Reviews and scores the report"),
+    ("search", "🔍", "Search Agent", "Finds market data, news & filings"),
+    ("reader", "📄", "Reader Agent", "Scrapes the best financial source"),
+    ("writer", "✍️", "Writer", "Drafts the investment research report"),
+    ("critic", "🧐", "Critic", "Checks numbers, risks & bias"),
 ]
 LABELS = {"waiting": "WAITING", "running": "● RUNNING", "done": "✓ DONE", "error": "✕ FAILED"}
-EXAMPLES = ["LLM agents 2026", "CRISPR gene editing", "Fusion energy progress"]
+EXAMPLES = ["Tesla stock analysis", "Bitcoin outlook 2026", "NVIDIA earnings breakdown"]
 
 
 def steps_html(states: dict) -> str:
@@ -784,7 +785,7 @@ def to_text(value) -> str:
 
 
 def run_pipeline(topic: str, slot) -> dict:
-    """Same logic as pipeline.py, but updates the animated cards live."""
+    """Same logic as pipeline.py, finance-focused, with live animated cards."""
     states, out = {}, {}
 
     def update(step, status):
@@ -795,21 +796,26 @@ def run_pipeline(topic: str, slot) -> dict:
     try:
         current = "search"; update(current, "running")
         sr = build_search_agent().invoke({"messages": [
-            ("user", f"Find recent, reliable and detailed information about: {topic}")]})
+            ("user", f"Find recent, reliable financial information about: {topic}. "
+                     f"Focus on stock price, valuation, earnings, revenue, market trends, "
+                     f"analyst opinions, risks and latest news.")]})
         out["search"] = to_text(sr["messages"][-1].content)
         update(current, "done")
 
         current = "reader"; update(current, "running")
         rr = build_reader_agent().invoke({"messages": [("user",
-            f"Based on the following search results about '{topic}', "
-            f"pick the most relevant URL and scrape it for deeper content.\n\n"
+            f"Based on the following financial search results about '{topic}', "
+            f"pick the most relevant URL and scrape it for deeper financial content.\n\n"
             f"Search Results:\n{out['search'][:800]}")]})
         out["reader"] = to_text(rr["messages"][-1].content)
         update(current, "done")
 
         current = "writer"; update(current, "running")
         combined = (f"SEARCH RESULTS : \n {out['search']} \n\n"
-                    f"DETAILED SCRAPED CONTENT : \n {out['reader']}")
+                    f"DETAILED SCRAPED CONTENT : \n {out['reader']} \n\n"
+                    f"INSTRUCTIONS: Write this as a professional finance research report "
+                    f"with clear sections: Overview, Key Financials & Metrics, Market Trends, "
+                    f"Risks, and Outlook. Use numbers and data points wherever possible.")
         out["writer"] = to_text(writer_chain.invoke({"topic": topic, "research": combined}))
         update(current, "done")
 
@@ -850,9 +856,9 @@ st.markdown("""
 <div class="face f4"></div><div class="face f5"></div><div class="face f6"></div>
 <div class="core"></div>
 </div></div>
-<div class="eyebrow">MULTI-AGENT AI SYSTEM</div>
-<div class="hero-title">ResearchMind</div>
-<div class="hero-sub">Four specialised AI agents search, read, write and critique, delivering a polished research report on any topic.</div>
+<div class="eyebrow">MULTI-AGENT FINANCE AI</div>
+<div class="hero-title">FinSight</div>
+<div class="hero-sub">Four specialised AI agents search markets, read financial sources, write and critique — delivering a polished investment research report on any stock, crypto, sector or company.</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -864,8 +870,8 @@ col_in, _, col_pipe = st.columns([5, 0.4, 4])
 with col_in:
     st.markdown('<div class="section-heading">Start a research</div>', unsafe_allow_html=True)
     with st.container(key="inputcard"):
-        st.text_input("Research topic", key="topic",
-                      placeholder="e.g. Quantum computing breakthroughs in 2026")
+        st.text_input("Finance research topic", key="topic",
+                      placeholder="e.g. Tesla stock analysis and 2026 outlook")
         run_clicked = st.button("⚡  Run research pipeline", use_container_width=True)
     with st.container(key="chips"):
         for col, ex in zip(st.columns(len(EXAMPLES)), EXAMPLES):
@@ -883,7 +889,7 @@ with col_pipe:
 if run_clicked:
     topic = st.session_state.topic.strip()
     if not topic:
-        st.warning("Please enter a research topic first.")
+        st.warning("Please enter a finance research topic first.")
     else:
         st.session_state.results = None
         try:
@@ -920,7 +926,7 @@ if res:
     if failed:
         st.caption("Some formats are unavailable.  " + "  ·  ".join(failed))
 
-    tab_report, tab_feedback, tab_sources = st.tabs(["📝 Report", "🧐 Critic feedback", "🔎 Sources"])
+    tab_report, tab_feedback, tab_sources = st.tabs(["📝 Report", "🧐 Analyst review", "🔎 Sources"])
 
     with tab_report:
         with st.container(key="reportcard"):
@@ -933,5 +939,5 @@ if res:
         st.markdown("#### Scraped content")
         st.markdown(res["reader"])
 
-st.markdown('<div class="footer">ResearchMind · LangChain multi-agent pipeline · Built with Streamlit</div>',
+st.markdown('<div class="footer">FinSight · LangChain multi-agent finance pipeline · Built with Streamlit</div>',
             unsafe_allow_html=True)
